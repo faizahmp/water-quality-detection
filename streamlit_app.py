@@ -1,51 +1,40 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import r2_score
+import time
+from multiprocessing import Queue, Process
+from ph_streamer import stream_ph_data
 
-# Define simple sample data manually
-def load_simple_data():
-    data = {
-        'X': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        'y': [2.1, 4.2, 6.1, 8.0, 10.1, 11.9, 14.2, 16.1, 18.0, 20.2]
-    }
-    return pd.DataFrame(data)
+# Start data streaming process only once
+if "ph_data_queue" not in st.session_state:
+    st.session_state.ph_data_queue = Queue()
+    st.session_state.data = []
+    p = Process(target=stream_ph_data, args=(st.session_state.ph_data_queue,))
+    p.daemon = True
+    p.start()
 
-# App title
-st.title("📘 Simple Linear Regression Dashboard")
+st.title("🧪 Real-Time pH Sensor Dashboard")
 
-# Load data
-df = load_simple_data()
+placeholder = st.empty()
 
-# Sidebar options
-st.sidebar.header("Options")
-if st.sidebar.checkbox("Show raw data", value=True):
-    st.subheader("🔍 Simple Dataset")
-    st.dataframe(df)
+# Continuously update plot
+while True:
+    # Collect data from queue
+    while not st.session_state.ph_data_queue.empty():
+        st.session_state.data.append(st.session_state.ph_data_queue.get())
 
-# Extract X and y
-X = df[['X']]  # shape: (n_samples, 1)
-y = df['y']    # shape: (n_samples,)
+    if st.session_state.data:
+        df = pd.DataFrame(st.session_state.data)
+        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s")
 
-# Fit linear regression model
-model = LinearRegression()
-model.fit(X, y)
-y_pred = model.predict(X)
+        with placeholder.container():
+            st.subheader("📊 pH Time Series")
+            fig, ax = plt.subplots()
+            ax.plot(df["timestamp"], df["pH"], marker="o", linestyle="-", color="green")
+            ax.set_title("Live pH Readings")
+            ax.set_xlabel("Time")
+            ax.set_ylabel("pH Level")
+            ax.grid(True)
+            st.pyplot(fig)
 
-# Show model info
-st.subheader("📈 Linear Regression Model")
-st.markdown(f"**Equation:** y = {model.coef_[0]:.2f}x + {model.intercept_:.2f}")
-st.markdown(f"**R² score:** {r2_score(y, y_pred):.3f}")
-
-# Plot
-st.subheader("📉 Regression Plot")
-fig, ax = plt.subplots()
-ax.scatter(X, y, color='blue', label='Actual Data')
-ax.plot(X, y_pred, color='red', linewidth=2, label='Regression Line')
-ax.set_xlabel("X")
-ax.set_ylabel("y")
-ax.set_title("Simple Linear Regression Fit")
-ax.legend()
-st.pyplot(fig)
+    time.sleep(1)  # Limit refresh rate

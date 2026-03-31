@@ -158,7 +158,6 @@ water-quality-detection/
 
 ## TEAM
 
-| | |
 |------------------------|----------------------|
 | Faizah Mappanyompa Rukka | Huynh Truong Tu      |
 | Umang Dobhal           | Prerna Jamloki       |

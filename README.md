@@ -158,9 +158,10 @@ water-quality-detection/
 
 ## TEAM
 
-|------------------------|----------------------|
+| | |
+|------------------------  |----------------------|
 | Faizah Mappanyompa Rukka | Huynh Truong Tu      |
-| Umang Dobhal           | Prerna Jamloki       |
-| Kanyarak Klaichit      |                      |
+| Umang Dobhal             | Prerna Jamloki       |
+| Kanyarak Klaichit        |                      |
 
 This project was developed as part of coursework in the  **Department of Human Intelligence Systems**, Graduate School of Life Science and Systems Engineering, Kyushu Institute of Technology, Fukuoka, Japan
